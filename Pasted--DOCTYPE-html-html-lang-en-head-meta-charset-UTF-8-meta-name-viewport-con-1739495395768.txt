@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shout to Win</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            max-width: 500px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+        .bar-container {
+            width: 100%;
+            height: 30px;
+            background: #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .bar {
+            height: 100%;
+            width: 0;
+            background: green;
+            transition: width 0.2s, background 0.2s;
+        }
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        #next {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 20px;
+            border: none;
+            background: #1e3c72;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Shout to Win!</h1>
+        <p>Shout as loud as you can to fill the bar!</p>
+        <div class="bar-container">
+            <div class="bar" id="bar"></div>
+        </div>
+        <p id="status">Start shouting...</p>
+    </div>
+    <div id="popup">
+        <h2>Congratulations! You win!</h2>
+        <button id="next">Next</button>
+    </div>
+    
+    <script>
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            const microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            function updateBar() {
+                analyser.getByteFrequencyData(dataArray);
+                let volume = Math.max(...dataArray);
+                let bar = document.getElementById('bar');
+                let status = document.getElementById('status');
+                let popup = document.getElementById('popup');
+                let nextBtn = document.getElementById('next');
+                
+                let percentage = (volume / 256) * 100;
+                bar.style.width = percentage + '%';
+                
+                if (percentage < 25) {
+                    bar.style.background = 'green';
+                } else if (percentage < 50) {
+                    bar.style.background = 'yellow';
+                } else if (percentage < 75) {
+                    bar.style.background = 'red';
+                } else {
+                    bar.style.background = 'purple';
+                    popup.style.display = 'block';
+                }
+                
+                requestAnimationFrame(updateBar);
+            }
+            
+            updateBar();
+        }).catch(err => {
+            alert("Microphone access is required!");
+        });
+
+        document.getElementById("next").addEventListener("click", function() {
+            document.getElementById("popup").innerHTML = "<h2>GU KHALE💩</h2>";
+        });
+    </script>
+</body>
+</html>
